@@ -3,11 +3,11 @@ var Path = require('path');
 var _ = require('lodash');
 var exec = require('child_process').exec;
 
-module.exports = function shell(command, done) {
-
+module.exports = function shell(command, options) {
+    options = options || {};
     var p = new Promise(function (resolve, reject) {
         options = {
-            cwd: process.cwd(),
+            cwd: options.cwd || process.cwd(),
             maxBuffer: 16 * 1024 * 1024
         };
 
@@ -16,7 +16,6 @@ module.exports = function shell(command, done) {
         options.env = _.extend({}, process.env, {
             PATH: PATH
         }, options.env)
-
 
         var child = exec(command, {
             env: options.env,

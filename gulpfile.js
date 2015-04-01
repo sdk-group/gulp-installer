@@ -4,11 +4,14 @@ var Path = require('path');
 var Promise = require("bluebird");
 var fs = Promise.promisifyAll(require("fs"));
 var beautify = require('js-beautify').js_beautify;
-var git = require('gulp-git');
+var git = Promise.promisifyAll(require('gulp-git'));
+var del = require('del');
+var shell = require('./shell.js');
+
 
 
 //git clone -> get name of cloned package ->
-//    -> append name of folder to main package.json into gitDependencies 
+//    -> append name of dest to main package.json into gitDependencies 
 //-> add there directory of installed package
 
 gulp.task('install', function () {
@@ -23,23 +26,29 @@ gulp.task('install', function () {
         module = 'https:\\' + module;
     }
 
-    if (module.indexOf('git+') === -1) {
-        module = 'git+' + module;
-    }
 
 
+    var module_name = module.split('/').pop();
+    var module_path = Path.join(dest, module_name);
 
-    var install = git.clone(
-        //dest and module name here
-    ).then(function (data) {
-
-        var result = {
-            module_name: //get module_name
-            ,
-            git_path: module_version.split('@')[1],
-            dir: dest + Path.delimiter + this.module_name
-        };
-        return result;
+    var install = fs.mkdirAsync(dest).catch(function () {
+        return true;
+    }).then(function () {
+        return del.sync(module_path);
+    }).catch(function (arguments) {
+        return true;
+    }).then(function () {
+        return git.cloneAsync('https://github.com/stevelacy/gulp-git', {
+            cwd: dest,
+            quiet: false
+        });
+    }).then(function () {
+        return shell('npm install', {
+            cwd: module_path
+        });
+    }).then(function () {
+        console.log('done');
+        return true;
     });
 
     var read_package = fs.readFileAsync(package, 'utf8');
@@ -52,13 +61,12 @@ gulp.task('install', function () {
 
             var data = JSON.parse(result.red);
             if (!data.hasOwnProperty('gitDependencies')) {
-                data.customDependencies = {};
+                data.gitDependencies = {};
             }
 
-            data.customDependencies[result.installed.module_name] = {
-                git_path: result.installed.git_path,
-                dir: result.dir,
-
+            data.gitDependencies[module_name] = {
+                git_path: module,
+                dir: module_path.replace('\\', "/")
             };
 
             var str_data = JSON.stringify(data);
@@ -85,4 +93,32 @@ gulp.task('install', function () {
     //                console.log('It\'s saved!');
     //            });
     //    });
+});
+
+//test task
+gulp.task('clone', function () {
+    var dest = './test';
+    var module = 'https://github.com/stevelacy/gulp-git';
+    var module_name = module.split('/').pop();
+    var module_path = Path.join(dest, module_name);
+
+    fs.mkdirAsync(dest).catch(function () {
+        return true;
+    }).then(function () {
+        return del.sync(module_path);
+    }).catch(function (arguments) {
+        return true;
+    }).then(function () {
+        return git.cloneAsync('https://github.com/stevelacy/gulp-git', {
+            cwd: dest,
+            quiet: false
+        });
+    }).then(function () {
+        return shell('npm install', {
+            cwd: module_path
+        });
+    }).then(function () {
+        console.log('done');
+    });
+
 });

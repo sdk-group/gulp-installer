@@ -17,9 +17,13 @@
   },
   "homepage": "https://github.com/sleeping-sun/fork-test",
   "dependencies": {
-    "bindings": "^1.2.1"
+    "bindings": "^1.2.1",
+    "bluebird": "^2.9.21",
+    "gulp-git": "^1.1.0",
+    "lodash": "^3.6.0"
   },
   "devDependencies": {
+    "del": "^1.1.1",
     "gulp-concat": "^2.5.2",
     "gulp-install": "^0.2.0",
     "gulp-jsdoc": "^0.1.4",
@@ -28,13 +32,14 @@
     "gulp-reveal": "^1.0.0",
     "gulp-shell": "^0.4.0",
     "gulp-util": "^3.0.4",
+    "js-beautify": "^1.5.5",
     "through2": "^0.6.3",
     "yargs": "^3.6.0"
   },
-  "customDependencies": {
-    "node-uuid": {
-      "ver": "^1.4.3",
-      "dir": "folder2"
+  "gitDependencies": {
+    "gulp-git": {
+      "git_path": " https://github.com/stevelacy/gulp-git",
+      "dir": "test-folder/gulp-git"
     }
   }
 }
